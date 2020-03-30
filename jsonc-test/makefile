@@ -10,7 +10,6 @@ CXX_STANDARD=	c++14
 # include directories
 INC_DIR=		/usr/include/json-c/
 
-
 # library directories
 LIB_DIR=		/usr/lib/x86_64-linux-gnu/
 
@@ -30,7 +29,6 @@ LDFLAGS=    $(addprefix -L, $(LIB_DIR)) \
 
 $(PROJECT): main.cpp
 	g++ -o $(PROJECT) main.cpp $(LDFLAGS) $(CXXFLAGS)
-
 
 clean:
 	rm -f $(PROJECT)
