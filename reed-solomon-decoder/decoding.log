@@ -1,0 +1,26 @@
+2019-01-08 23:34:51  DEBUG:  open data.init file
+2019-01-08 23:34:51  DEBUG:  read q = 11 and k = 9
+2019-01-08 23:34:51  DEBUG:  initialize environment with ZZ_p = ZZ_11
+2019-01-08 23:34:51  DEBUG:  n = 10
+2019-01-08 23:34:51  DEBUG:  k = 9
+2019-01-08 23:34:51  DEBUG:  alpha = 2 -- primitive element
+2019-01-08 23:34:51  DEBUG:  initializing ends
+2019-01-08 23:34:51  DEBUG:  X: [1 2 2]
+2019-01-08 23:34:51  DEBUG:  C: [5 2 8 2 6 1 5 3 3 8]
+2019-01-08 23:34:51  DEBUG:  V: [5 2 8 2 0 1 6 3 3 8]
+2019-01-08 23:34:51  DEBUG:  start finding roots of polynomial [1]
+2019-01-08 23:34:51  DEBUG:  finishing search for roots
+2019-01-08 23:34:51  DEBUG:  D(V): [5 2 8 2 0 1 6 3 3 8]
+2019-02-17 22:42:48  DEBUG:  open data.init file
+2019-02-17 22:42:48  DEBUG:  read q = 11 and k = 9
+2019-02-17 22:42:48  DEBUG:  initialize environment with ZZ_p = ZZ_11
+2019-02-17 22:42:48  DEBUG:  n = 10
+2019-02-17 22:42:48  DEBUG:  k = 9
+2019-02-17 22:42:48  DEBUG:  alpha = 2 -- primitive element
+2019-02-17 22:42:48  DEBUG:  initializing ends
+2019-02-17 22:42:48  DEBUG:  X: [1 2 2]
+2019-02-17 22:42:48  DEBUG:  C: [5 2 8 2 6 1 5 3 3 8]
+2019-02-17 22:42:48  DEBUG:  V: [5 2 8 2 0 1 6 3 3 8]
+2019-02-17 22:42:48  DEBUG:  start decoding
+2019-02-17 22:42:48  DEBUG:  getting syndrome s = H*v = [1]
+2019-02-17 22:42:48  DEBUG:  D(V): [5 2 8 2 0 1 6 3 3 8]
