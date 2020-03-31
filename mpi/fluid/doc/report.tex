@@ -1,0 +1,141 @@
+\documentclass[12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel} 
+\usepackage[scaled = 0.8]{PTMono} %monotype font
+% \usepackage{paratype} %fonts
+\usepackage{indentfirst} %indent after sections
+\usepackage{xspace} % for additional spaces
+
+\usepackage[left = 2cm, right = 1cm, top = 2cm, bottom = 2cm]{geometry}
+\usepackage{lastpage}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage%
+[pdftex,unicode,pdfborder={0 0 0},draft=false,%backref=page,
+    hidelinks, % убрать, если хочется видеть ссылки: это
+               % удобно в PDF файле, но не должно появиться на печати
+    bookmarks=true,bookmarksnumbered=false,bookmarksopen=false]%
+{hyperref}
+
+\usepackage{tabularx}
+\usepackage{ltablex}  % for centering inside cells of tables
+\usepackage{pgfplots} % for histograms
+\usepackage{xcolor}   % for defining new colors
+\usepackage{amsmath}  % for split in equations
+\usepackage{amssymb}  % for >= <=
+\usepackage{commath}  % for dpd
+\renewcommand {\le} {\leqslant}
+\renewcommand {\ge} {\geqslant}
+
+\definecolor{dark-blue}{rgb}{0.108, 0.3137, 0.70196}
+\definecolor{dark-green}{rgb}{0.108, 0.7, 0.3}
+\definecolor{good-red}{rgb}{0.7, 0.1, 0.3}
+\definecolor{sky-blue}{rgb}{0.4, 0.6, 1}
+
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usetikzlibrary{scopes, 
+  positioning, 
+  chains, 
+  arrows.meta, 
+  shadows}
+
+\usepackage{listings}
+\lstset { basicstyle = \ttfamily
+        , showspaces = false
+        , showstringspaces = false
+        , language = C++
+        }
+
+\begin{document}
+\begin{centering}
+
+\textbf{Отчёт}: <<Распараллеливание метода Рунге-Кутты 4 порядка>>\\
+
+{Радько~В.\,А.} \\
+\end{centering}
+
+\section*{Решение дифференциального уравнения методом Рунге-Кутты 4 порядка}
+
+\begin{figure}[h] 
+\centering
+\begin{tikzpicture}[scale = 1]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                % , axis x line = bottom
+                % , axis y line = middle
+                % , xtick = data
+                % , ytick = data
+                % , xmin = 0
+                % , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {../data/p=1.data};
+        \addlegendentry{$p = 1$}
+
+        \addplot [color = dark-green, line width = 0.5mm, mark = *]
+            table {../data/p=2.data};
+        \addlegendentry{$p = 2$}
+
+        \addplot [color = orange, line width = 0.5mm, mark = *]
+            table {../data/p=4.data};
+        \addlegendentry{$p = 4$}
+
+        \addplot [color = good-red, line width = 0.5mm, mark = *]
+            table {../data/p=6.data};
+        \addlegendentry{$p = 6$}
+    \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:1}Время работы}
+\end{figure}
+
+\begin{figure}[h] 
+\centering
+\begin{tikzpicture}[scale = 1]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                % , axis x line = bottom
+                % , axis y line = middle
+                % , xtick = data
+                % , ytick = data
+                % , xmin = 0
+                % , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {../data/speedup_p=1.data};
+        \addlegendentry{$p = 1$}
+
+        \addplot [color = dark-green, line width = 0.5mm, mark = *]
+            table {../data/speedup_p=2.data};
+        \addlegendentry{$p = 2$}
+
+        \addplot [color = orange, line width = 0.5mm, mark = *]
+            table {../data/speedup_p=4.data};
+        \addlegendentry{$p = 4$}
+
+        \addplot [color = good-red, line width = 0.5mm, mark = *]
+            table {../data/speedup_p=6.data};
+        \addlegendentry{$p = 6$}
+    \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:1}Ускорение}
+\end{figure}
+
+\newpage
+
+\lstinputlisting[caption = {Исходный код программы для MPI}]{../main.c}
+
+\end{document}
