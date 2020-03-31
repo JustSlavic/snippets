@@ -1,0 +1,9 @@
+2
+WI 777 01.01.2014 10:01 `Stone ace` 3
+`Brain eraser` 1 20000.0
+`Cherry` 5 12000.0
+`Strawberry` 100 10.03
+WI 42 01.01.2014 10:00 `Stone ace` 3
+`Apple` 10 1000.0
+`Cherry` 22 7000.0
+`Strawberry` 10 2500.0

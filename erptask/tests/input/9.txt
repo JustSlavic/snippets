@@ -1,0 +1,12 @@
+6
+BI 1 18.02.2016 12:00 `Hall Industries` 11111111111111111111 5000.0
+BW 2 18.02.2016 11:00 `Xero Industries` 11111111111111111111 5000.0
+WW 3 18.02.2016 10:00 `Alabama Research Center` 2
+`Screwdriver` 2 600.0
+`Glue` 5 2000.0
+WI 4 16.02.2016 11:00 `Xero Industries` 3
+`Screwdriver` 5 1000.0
+`Screw` 1000 500.0
+`Glue` 20 7000.0
+BW 5 16.02.2016 10:00 `Hall Industries` 11111111111111111111 20000.0
+BI 6 15.02.2016 10:00 `Michigan Research Center` 11111111111111111111 10000.0

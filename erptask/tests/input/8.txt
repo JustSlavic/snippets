@@ -1,0 +1,13 @@
+3
+WI 42 01.01.2014 10:00 `Stone ace` 3
+`Apple` 10 1000.0
+`Cherry` 22 7000.0
+`Strawberry` 10 2500.0
+WW 44 01.01.2014 10:02 `Apple corp.` 3
+`Apple` 10 1000.0
+`Cherry` 22 7000.0
+`Strawberry` 10 2500.0
+WW 43 01.01.2014 10:01 `Apple corp.` 3
+`Apple` 10 1000.0
+`Cherry` 22 7000.0
+`Strawberry` 10 2500.0

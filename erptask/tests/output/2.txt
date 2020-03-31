@@ -1,0 +1,4 @@
+ERROR WW 4 3
+`Apple` -10
+`Cherry` -22
+`Strawberry` -10
