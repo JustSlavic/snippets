@@ -1,0 +1,451 @@
+\documentclass[12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel} 
+\usepackage[scaled = 0.8]{PTMono} %monotype font
+% \usepackage{paratype} %fonts
+\usepackage{indentfirst} %indent after sections
+\usepackage{xspace} % for additional spaces
+
+\usepackage[left = 2cm, right = 1cm, top = 2cm, bottom = 2cm]{geometry}
+\usepackage{lastpage}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage%
+[pdftex,unicode,pdfborder={0 0 0},draft=false,%backref=page,
+    hidelinks, % убрать, если хочется видеть ссылки: это
+               % удобно в PDF файле, но не должно появиться на печати
+    bookmarks=true,bookmarksnumbered=false,bookmarksopen=false]%
+{hyperref}
+
+\usepackage{tabularx}
+\usepackage{ltablex}  % for centering inside cells of tables
+\usepackage{pgfplots} % for histograms
+\usepackage{xcolor}   % for defining new colors
+\usepackage{amsmath}  % for split in equations
+\usepackage{amssymb}  % for >= <=
+\renewcommand {\le} {\leqslant}
+\renewcommand {\ge} {\geqslant}
+
+\definecolor{dark-blue}{rgb}{0.108, 0.3137, 0.70196}
+\definecolor{dark-green}{rgb}{0.108, 0.7, 0.3}
+\definecolor{good-red}{rgb}{0.7, 0.1, 0.3}
+
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usetikzlibrary{scopes, 
+  positioning, 
+  chains, 
+  arrows.meta, 
+  shadows}
+
+\usepackage{listings}
+\lstset { basicstyle = \ttfamily
+        , showspaces = false
+        , showstringspaces = false
+        , language = C++
+        }
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{centering}
+
+МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ РФ\\
+Федеральное государственное образовательное учреждение\\ высшего образования\\
+<<ЮЖНЫЙ ФЕДЕРАЛЬНЫЙ УНИВЕРСИТЕТ>> \\
+\vspace{1cm}
+Институт математики, механики и компьютерных наук им. И.\,И.~Воровича\\
+\vspace{6cm}
+
+{\Large \textbf{Отчёт} } \\
+<<Распараллеливание сортировки>>\\
+\end{centering}
+
+\vfill
+
+\begin{flushright}
+\begin{tabular}{l}
+Выполнил: cтудент III курса, {Радько~В.\,А.} \\
+Проверил: доцент каф.\,ВМиМФ, {Говорухин~В.\,Н.} \\
+\end{tabular}
+\end{flushright}
+
+\vspace{4cm}
+
+\begin{centering}
+Ростов-на-Дону, 2018\\
+\end{centering}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Распараллеливание сортировки с помощью OpenMP}
+
+В качестве базового способа сортировки была выбрана простейшая сортировка <<пузырьком>>. Метод распараллеливания заключается в том, чтобы разбить массив на приблизительно равные участки, отсортировать каждый в отдельности, а затем слить эти участки в один отсортированный массив. Массив разбивается на $k$ участков $[a_i, a_{i+1}]$, где $a_i = a_0 + i\cdot\dfrac{n}{k}$, а длина такого участка будет равна $(i+1)\cdot\dfrac{n}{k} - i\cdot\dfrac{n}{k}$.
+
+Все следующие тесты проводились $10$ раз, и бралось среднее значение, чтобы приблизить результаты эксперимента к математическому ожиданию.
+
+\subsection{Тест $p=1$, $k$ -- переменная}
+
+Тест при фиксированном одном потоке и переменном количестве разбиений показывает, что алгоритм сортировки <<пузырьком>> ускоряется даже на одном потоке. Результаты такого теста на рис. \ref{fig:1}
+
+\begin{figure}[h] 
+\centering
+\begin{tikzpicture}[scale = 1]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {data/sort p=1 k=1.data};
+        \addlegendentry{$k = 1$}
+
+        \addplot [color = dark-green, line width = 0.5mm, mark = *]
+            table {data/sort p=1 k=2.data};
+        \addlegendentry{$k = 2$}
+
+        \addplot [color = orange, line width = 0.5mm, mark = *]
+            table {data/sort p=1 k=4.data};
+        \addlegendentry{$k = 4$}
+
+        \addplot [color = good-red, line width = 0.5mm, mark = *]
+            table {data/sort p=1 k=8.data};
+        \addlegendentry{$k = 8$}
+    \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:1} Ускорение при увеличении параметра $k$, один поток}
+\end{figure}
+
+\newpage
+
+\subsection{Тест при увеличении обоих параметров}
+
+Результаты на рисунках \ref{fig:2}--\ref{fig:5} показывают, что при $k < p$ результатов от параллельности нет, поскольку алгоритм параллелится по участкам, которых $k$ штук.
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=1.data};
+            \addlegendentry{$p = 1$}
+
+            \addplot [color = dark-green, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=1.data};
+            \addlegendentry{$p = 2$}
+
+            \addplot [color = orange, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=1.data};
+            \addlegendentry{$p = 4$}
+
+            \addplot [color = good-red, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=1.data};
+            \addlegendentry{$p = 6$}
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=1.data};
+            \addlegendentry{$p = 8$}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:2}Ускорение при фиксации параметра $k = 1$}
+\end{minipage} \hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=2.data};
+            \addlegendentry{$p = 1$}
+
+            \addplot [color = dark-green, line width = 0.5mm, mark = *] 
+                table {data/sort p=2 k=2.data};
+            \addlegendentry{$p = 2$}
+
+            \addplot [color = orange, line width = 0.5mm, mark = *] 
+                table {data/sort p=2 k=2.data};
+            \addlegendentry{$p = 4$}
+
+            \addplot [color = good-red, line width = 0.5mm, mark = *] 
+                table {data/sort p=2 k=2.data};
+            \addlegendentry{$p = 6$}
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=2 k=2.data};
+            \addlegendentry{$p = 8$}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:3}Ускорение при фиксации параметра $k = 2$}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=4.data};
+            \addlegendentry{$p = 1$}
+
+            \addplot [color = dark-green, line width = 0.5mm, mark = *] 
+                table {data/sort p=2 k=4.data};
+            \addlegendentry{$p = 2$}
+
+            \addplot [color = orange, line width = 0.5mm, mark = *] 
+                table {data/sort p=4 k=4.data};
+            \addlegendentry{$p = 4$}
+
+            \addplot [color = good-red, line width = 0.5mm, mark = *] 
+                table {data/sort p=4 k=4.data};
+            \addlegendentry{$p = 6$}
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=4 k=4.data};
+            \addlegendentry{$p = 8$}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:4}Ускорение при фиксации параметра $k = 6$}
+\end{minipage} \hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=1 k=8.data};
+            \addlegendentry{$p = 1$}
+
+            \addplot [color = dark-green, line width = 0.5mm, mark = *] 
+                table {data/sort p=2 k=8.data};
+            \addlegendentry{$p = 2$}
+
+            \addplot [color = orange, line width = 0.5mm, mark = *] 
+                table {data/sort p=4 k=8.data};
+            \addlegendentry{$p = 4$}
+
+            \addplot [color = good-red, line width = 0.5mm, mark = *] 
+                table {data/sort p=6 k=8.data};
+            \addlegendentry{$p = 6$}
+
+            \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+                table {data/sort p=8 k=8.data};
+            \addlegendentry{$p = 8$}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:5}Ускорение при фиксации параметра $k = 8$}
+\end{minipage}
+\end{figure}
+
+\newpage
+
+\subsection{Результаты эксперимента при переменном количестве потоков}
+
+Зафиксируем количество разбиений $k=100$. Результаты эксперимента на рис. \ref{fig:6} показывают несколько вещей:
+
+\begin{itemize}
+    \item при увеличении потоков в $m$ раз, ускорение всегда происходит в $t < m$ раз; 
+    \item несмотря на то, что количество потоков может быть больше, чем количество физических ядер, реального ускорения программы при количестве потоков $p$ большем, чем количество физических ядер -- не происходит.
+\end{itemize}
+
+\begin{figure}[h] 
+\centering
+\begin{tikzpicture}[scale = 1]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {data/sort p=1 k=100.data};
+        \addlegendentry{$p = 1$}
+
+        \addplot [color = dark-green, line width = 0.5mm, mark = *]
+            table {data/sort p=2 k=100.data};
+        \addlegendentry{$p = 2$}
+
+        \addplot [color = orange, line width = 0.5mm, mark = *]
+            table {data/sort p=4 k=100.data};
+        \addlegendentry{$p = 4$}
+
+        \addplot [color = good-red, line width = 0.5mm, mark = *]
+            table {data/sort p=6 k=100.data};
+        \addlegendentry{$p = 6$}
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {data/sort p=8 k=100.data};
+        \addlegendentry{$p = 8$}
+    \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:6}Ускорение при значении параметра $k = 100$ и разном количестве потоков}
+\end{figure}
+
+\section{Распараллеливание сортировки с помощью MPI}
+
+Алгоритм распараллеливания с помощью MPI отличается от того же алгоритма на OpenMP. В алгоритме с MPI я фиксирую количество разбиений массива количеством используемых узлов. Каждый узел получает свою часть массива, которую сортирует и тогда нулевой узел собирает массив обратно и собирает отсортированный массив из полученных кусков. Представить такой алгоритм можно таким образом:
+
+\begin{figure}[h] 
+\centering
+\begin{tikzpicture}[scale = 1]
+    % {
+    % [every join/.append style = {-Stealth, color = blue, line width = 0.3mm}, start chain = A]
+    % \node [on chain, fill = white, draw, minimum height = 7mm, drop shadow] 
+    %     (A) {1};
+    % \node [on chain, fill = white, draw, minimum height = 7mm, drop shadow]
+    %     (B) {2};
+    % }
+    \draw (-1, 0.5) node [draw, drop shadow, fill = white] {node 0:};
+    \draw (0, 0) -- (6, 0) -- (6, 1) -- (0, 1) -- cycle;
+    \draw (1, 0) -- (1, 1);
+    \draw (2, 0) -- (2, 1);
+    \draw (5, 0) -- (5, 1);
+    \draw [-Stealth] (0.5, 0) arc (140:180:3) node [draw, drop shadow, fill = white, below] {node 0};
+    \draw [-Stealth] (1.5, 0) arc (150:180:2) node [draw, drop shadow, fill = white, below] {node 1};
+    \draw [-Stealth] (5.5, 0) arc (10:-20:3) node [fill = white, below] {...};
+    \draw (3, -3) node [draw, drop shadow, fill = white] {node 0};
+    \draw [-Stealth] (1.2, -1.6) arc (180:263:1.2);
+    \draw [-Stealth] (-.2, -2.5) arc (240:270:4.9);
+    \draw [-Stealth] (5.3, -1.9) arc (-30:-85:2);
+    \draw (-2, -1.8) node {sort:};
+\end{tikzpicture}
+\caption{\label{fig:7}Алгоритм сортировки}
+\end{figure}
+
+Результаты распараллеливания представлены на рисунке ниже:
+
+\begin{figure}[h] 
+\centering
+\begin{tikzpicture}[scale = 1]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                % , axis x line = bottom
+                % , axis y line = middle
+                , xtick = data
+                , ytick = data
+                , xmin = 0
+                , xmax = 380000
+                % , ymax = 0.43
+                , xlabel = n
+                , ylabel = micro seconds
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {data/mpi_sort k=1.data};
+        \addlegendentry{$k = 1$}
+
+        \addplot [color = dark-green, line width = 0.5mm, mark = *]
+            table {data/mpi_sort k=2.data};
+        \addlegendentry{$k = 2$}
+
+        \addplot [color = orange, line width = 0.5mm, mark = *]
+            table {data/mpi_sort k=4.data};
+        \addlegendentry{$k = 4$}
+
+        \addplot [color = good-red, line width = 0.5mm, mark = *]
+            table {data/mpi_sort k=6.data};
+        \addlegendentry{$k = 6$}
+
+        \addplot [color = dark-blue, line width = 0.5mm, mark = *] 
+            table {data/mpi_sort k=8.data};
+        \addlegendentry{$k = 8$}
+
+        \addplot [color = dark-green, line width = 0.5mm, mark = *] 
+            table {data/mpi_sort k=12.data};
+        \addlegendentry{$k = 12$}
+    \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:8}Время при распараллеливании MPI}
+\end{figure}
+
+\begin{table}[h]
+\caption{Таблица средних ускорений}
+\begin{tabularx}{\textwidth}{|c|c|}
+\hline
+Количество узлов & Среднее ускорение \\
+\hline
+$1$ & $1$ \\
+$2$ & $4$ \\
+$4$ & $11-16$ \\
+$6$ & $38-40$ \\
+$8$ & $66-69$ \\
+$12$ & $122-134$ \\
+\hline
+\end{tabularx}
+\end{table}
+
+\newpage
+\lstinputlisting[caption = {Исходный код программы для OpenMP}]{main.c}
+
+\newpage
+\lstinputlisting[caption = {Исходный код программы для MPI}]{mpi_main.c}
+
+\end{document}
