@@ -1,0 +1,237 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel} 
+\usepackage[scaled = 0.8]{PTMono} %monotype font
+
+\usepackage{indentfirst} %indent after sections
+
+\usepackage[left = 3cm, right = 2cm, top = 2cm, bottom = 2cm]{geometry}
+\usepackage{lastpage}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{graphicx}
+\usepackage{dsfont}   % for math letters with double lines
+\usepackage{amsmath}  % for split in equations
+\usepackage{commath}  % for d/dx
+\usepackage{mathrsfs} % for another fancy math letters
+
+\usepackage{pgfplots} % for histograms
+\usepackage{tikz-qtree} % for trees
+\usepackage{xcolor}   % for defining new colors
+
+\definecolor{dark-blue}{rgb}{0.108, 0.3137, 0.70196}
+
+\usetikzlibrary{ arrows.meta
+               , shadows
+               , trees  
+               }
+
+\usepackage{listings}
+\lstset { basicstyle = \ttfamily
+        , numbers = left
+        , numberstyle = \tiny \color{gray}
+        , breaklines = true
+        , frame = single
+        , showspaces = false
+        , showstringspaces = false
+        , language = Matlab
+        , morekeywords = {unifrnd}
+        , deletekeywords = {apply}
+        }
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{centering}
+
+\textbf{Отчёт} <<Дискретизация сигнала и его спектральный анализ>>\\
+
+{Радько~В.\,А.}, 2 группа 4 курс \\
+Вариант 16 \\
+\end{centering}
+
+
+\subsection*{Выделение гармонических частот сигнала}
+
+Дан дискретный сигнал $x(t)$, применим к нему быстрое дискретное преобразование Фурье: \lstinline{fft}. 
+Поскольку полученный вектор будет лежать в $\mathds{C}^n$, найдём модуль каждой координаты, тогда получим $X$ и построим его график.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture} [scale = 0.75]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = \paperwidth
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot[color = dark-blue, line width = 0.5mm] 
+            table {../data/X.graph};
+        \addlegendentry{значение $X$}
+    \end{axis}
+\end{tikzpicture}
+\caption{\label{graph:1}График частот сигнала}
+\end{figure}
+
+На графике чётко видно два пика, на глаз они около значений $0.6$ и $1.75$. Найдём точные аргументы этих пиков: $\omega_1 = 0.60681, \: \omega_2 = 1.7337$. 
+Частота в герцах равна $\nu = \dfrac{\omega}{2\pi}$, тогда $\nu_{1} = 0.096576\text{Гц.}, \:  \nu_{2} = 0.27593\text{Гц.}$.
+
+\subsection*{Добавление шума}
+
+Пусть $A^*$ -- амплитуда шумового сигнала $e$. Сам шум -- это вектор из $n$ равномерно распределённых на $(-A^*, A^*)$ случайных величин. Для генерации шума я воспользовался функцией \lstinline{unifrnd} из пакета Octave. 
+
+Наложим шум на наш исходный сигнал и найдём такую пороговую амплитуду $A^*$, что при дальшейшем увеличении амплитуды шума невозможно будет распознать первый, низкий пик. Графики с низкой и высокой амплитудой шума на рисунках~\ref{graph:2}~и~\ref{graph:3}.
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.3mm] 
+                table {../data/XA28.graph};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{graph:2}$\mathcal{F}(x + e)$ при $A = 2.6$}
+\end{minipage} \hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.3mm] 
+                table {../data/XA29.graph};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{graph:3}$\mathcal{F}(x + e)$ при $A = 2.9$}
+\end{minipage}
+\end{figure}
+
+\subsection*{Алиасинг}
+
+Добавим к исходному сигналу новый сигнал $y(t) = \hat{A} \cos{\Omega_1 t} + 2 \hat{A} \cos{\Omega_2 t}$. 
+Найдём близкие к максимуму значения $\Omega_{1,2}$, но чтобы условие Найквиста всё ещё выполнялось. 
+Затем начнём увеличивать $\Omega_2$ до тех пор, пока пики не поменяются местами. 
+Изобразим распределения частот на графике, построенном при помощи преобразования Фурье до и после увеличения $\Omega_2$ (рисунки \ref{graph:4}, \ref{graph:5}).
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.3mm] 
+                table {../data/Y1.graph};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{graph:4}Значения $Y$ до увеличения $\Omega_2$}
+\end{minipage} \hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.3mm] 
+                table {../data/Y2.graph};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{graph:5}Значения $Y$ после увеличения $\Omega_2$}
+\end{minipage}
+\end{figure}
+
+На рисунке \ref{graph:4} значения частот $\Omega_1 = 2.6$, $\Omega_2 = 2.7$. На рисунке \ref{graph:5} значения частот $\Omega_1 = 2.6$, $\Omega_2 = 3.1$. Запишем условие Найквиста и посмотрим, есть ли алиасинг.
+\begin{equation*}
+\begin{split}
+    \xi_0 \cdot \Delta t & < \pi \\
+\end{split}
+\end{equation*}
+
+То есть $\xi_0 = \dfrac{\pi}{\Delta t}$ -- это граничное значение частоты, выше которой возникает алиасинг. Для моего сигнала с шагом дискретизации $\Delta t = 1.1325$ получается значение $\xi_0 = 2.774$. Следовательно на рисунке \ref{graph:4} алиасинга не происходит, а на рисунке \ref{graph:5} - алиасинг есть.
+
+\subsection*{Изменение шага дискретизации}
+
+Изменим шаг дискретизации, $\Delta t' = 2 \Delta t$, тогда $n' = n/2$. Однако $\Delta \xi$ не изменится, $\Delta \xi' = \dfrac{2\pi}{n'\Delta t'} = \dfrac{2\pi}{2\Delta t \frac{n}{2}} = \dfrac{2\pi}{n\Delta t} = \Delta \xi$. 
+Так же найдём новое граничное значение частоты из условия Найквиста $\xi_0' = \dfrac{\pi}{\Delta t'} = \dfrac{\pi}{2\Delta t} = \dfrac{\xi_0}{2}$, в моём варианте $\xi_0' = 1.387$.
+
+Сравнивая $\xi_0$, полученный в прошлом задании с $\xi_0'$, можно сделать вывод, что все частоты, находящиеся в промежутке $(\xi_0',\xi_0) = (1.387, 2.774)$ при уменьшении частоты дискретизации, будут накладываться на другие частоты и приводить к алиасингу. 
+
+В исходном сигнале мы имеем частоты $\omega_1 = 0.60681, \: \omega_2 = 1.7337$, видно, что $\omega_2 \in (1.387, 2.774) \Rightarrow$ алиасинг возникает.
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.3mm] 
+                table {../data/pic6.graph};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{graph:6}Частоты до уменьшения шага дискретизации}
+\end{minipage} \hfill
+\begin{minipage}{0.45\textwidth}
+    \begin{tikzpicture}[scale = 1]
+        \begin{axis}[
+                , axis x line = bottom
+                , axis y line = middle
+                , xlabel = {$\xi$ -- круговая частота}
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+            \addplot [color = dark-blue, line width = 0.3mm] 
+                table {../data/pic7.graph};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{graph:7}Частоты после уменьшения шага дискретизации}
+\end{minipage}
+\end{figure}
+
+\newpage
+
+\lstinputlisting[ caption = {\lstinline{read_signal.m}}
+                , numbers = left
+                ]
+    {../read_signal.m}
+\lstinputlisting[ caption = {\lstinline{task1.m}}
+                , numbers = left
+                ]
+    {../task1.m}
+\lstinputlisting[ caption = {\lstinline{task2.m}}
+                , numbers = left
+                ]
+    {../task2.m}
+\lstinputlisting[ caption = {\lstinline{task3.m}}
+                , numbers = left
+                ]
+    {../task3.m}
+\lstinputlisting[ caption = {\lstinline{task4.m}}
+                , numbers = left
+                ]
+    {../task4.m}
+
+\end{document}
