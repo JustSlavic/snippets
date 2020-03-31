@@ -1,0 +1,974 @@
+\documentclass{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel} 
+\usepackage[scaled = 0.8]{PTMono} %monotype font
+% \usepackage{paratype} %fonts
+\usepackage{indentfirst} %indent after sections
+\usepackage{xspace} % for additional spaces
+
+\usepackage[left = 2cm, right = 1cm, top = 2cm, bottom = 2cm]{geometry}
+
+\usepackage{ltablex}  % for centering inside cells of tables
+\usepackage{pgfplots} % for histograms
+\usepackage{xcolor}   % for defining new colors
+\usepackage{amsmath}  % for split in equations
+\usepackage{amssymb}  % for >= <=
+\renewcommand {\le} {\leqslant}
+\renewcommand {\ge} {\geqslant}
+
+\definecolor{dark-blue}{rgb}{0.108, 0.3137, 0.70196}
+\definecolor{dark-green}{rgb}{0.108, 0.7, 0.3}
+
+\usepackage{listings}
+\lstset { basicstyle = \ttfamily
+        , showspaces = false
+        , showstringspaces = false
+        }
+
+\begin{document}
+
+
+\begin{centering}
+Отчёт
+
+По индивидуальному заданию
+
+Вариант 23, 24
+
+Выполнил: Радько~В.\,А.\\
+\end{centering}
+
+\vspace{7mm}
+
+\subsubsection*{Первичная обработка статистических данных}
+
+Была дана выборка значений случайных величин <<Число вызовов, поступивших на АТС за некоторый промежуток времени>>, обозначим её $\xi$, и <<Продолжительность разговора (мин.)>> обозначим её $\eta$.
+
+Рассмотрим первую выборку $\{ x_i \}$, её объём $n = 100$. 
+Сначала определим размах выборки, для этого находим $\min(x_i) = 1$ и $\max(x_i) = 21$. 
+Разобьём интервал $[1, 21]$ на $k_1 = 10$ частей и построим вариационный ряд.
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+    $\left [a_i, a_{i+1}\right)$ & $\left [1, 3\right )$ & $\left [3, 5\right )$ & $\left [5, 7\right )$ & $\left [7, 9\right )$ & $\left [9, 11\right )$ & $\left [11, 13\right )$ & $\left [13, 15\right )$ & $\left [15, 17\right )$ & $\left [17, 18\right )$ & $\left [19, 21\right ]$ \\
+\hline
+    $\frac{m_i}{n}$ & $0.06$ & $0.23$ & $0.35$ & $0.2$ & $0.1$ & $0.04$ & $0.01$ & $0.0$ & $0.0$ & $0.1$ \\
+\hline
+\end{tabularx}
+\setcounter{table}{0}
+\caption {Вариационный ряд $\{ x_i \}$}
+\end{table}
+
+\begin{figure}[h] \label{fig:1}
+\centering
+\begin{tikzpicture} [scale = 0.8]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                % , extra y ticks={0,0.05,...,0.35}
+                , xtick = data
+                , ytick = data
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [ybar interval, color = black, fill = dark-blue, line width = 0.5mm] 
+            table {../data/hist1.data};
+    \end{axis}
+\end{tikzpicture}
+\caption{Гистограмма $\left \{ x_i \right\}$}
+\end{figure}
+
+Оценим $M\xi$ средним арифметическим: 
+
+\begin{equation}
+\bar x = \frac{1}{n}\sum \limits_{i=1}^{n}x_i \approx 6.08
+\end{equation}
+
+Дисперсию $D\xi$ будем оценивать формулой:
+
+\begin{equation}
+s_x^2 = \frac{1}{n - 1} \sum \limits_{i = 1}^{n} x_i^2 - \frac{n}{n - 1} \bar x^2 \approx 8.2562
+\end{equation}
+
+Оценка среднеквадратического отклонения: 
+
+\begin{equation}
+s_x = \sqrt{s_x^2} \approx 2.8734
+\end{equation}
+
+\newpage
+
+\subsubsection*{Интервальные оценки числовых характеристик}
+
+Так как случайная величина
+\begin{equation} \label{eq:1}
+\frac{s^2}{\sigma^2} = \frac{1}{n-1} \sum \limits_{i = 1}^{n} \frac{\left( \xi_i - \bar \xi \right)^2}{\sigma^2} \in \frac{1}{n - 1}\chi_{n-1}^2,
+\end{equation}
+
+тогда получим, что
+
+\begin{equation} \label{eq:2}
+\frac{\bar \xi - m}{s}\sqrt{n} = 
+\frac{\frac{\bar \xi - m}{\sigma}\sqrt{n}}{\frac{s}{\sigma}} = 
+\frac{\frac{\bar \xi - m}{\sigma}\sqrt{n}}{\sqrt{\frac{s^2}{\sigma^2}}} \in t_{n-1}.
+\end{equation}
+
+Выберем уровень доверия $\gamma = 0.95$. Тогда для выбранного уровня доверия определим величину $t_\gamma$ такую, что будет выполняться $P\left( |t_{n-1}| < t_\gamma \right) = \gamma$. Воспользуемся функцией, обратной функции распределения, \lstinline{tinv} из пакета Matlab.
+
+\begin{lstlisting}
+tinv(       (1 - 0.95)/2, 99) = -1.98;
+tinv(0.95 + (1 - 0.95)/2, 99) = 1.98;
+\end{lstlisting}
+
+% \begin{figure}[h] \label{fig:1}
+% \centering
+% \begin{tikzpicture}[scale = .6]
+%     \begin{axis}[ height = 0.4\paperheight
+%                 , width = 0.7\paperwidth
+%                 , axis x line = bottom
+%                 , axis y line = middle
+%                 , xmin = -5.5
+%                 , xmax = 5.5
+%                 , ymax = 0.43
+%                 , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+%                 ]
+
+%         \addplot [color = dark-blue, line width = 0.5mm] 
+%             table {../data/t99pdf.data};
+%     \end{axis}
+
+%     \draw (6, 9.5) node {\footnotesize{$y$}};
+%     \draw (13.5, 0.4) node {\footnotesize{$x$}};
+
+%     \draw (8, 4) arc [start angle = -90, end angle = -30, radius = 1cm] 
+%                  node [near end, above, minimum height = 25] {\large{$\gamma$}};
+%     \draw (9.5, .5) arc [start angle = 150, end angle = 130, radius = 1.5cm] 
+%                  node [near end, above] {\large{$\frac{1-\gamma}{2}$}};
+%     \draw (4, .5) arc  [start angle = 30, end angle = 50, radius = 1.5cm] 
+%                  node [near end, above] {\large{$\frac{1-\gamma}{2}$}};
+
+%     \draw (4.44, -.5) -- ++(0, 3) [dashed, color = dark-green, line width = 1];
+%     \draw (9.1, -.5) -- ++(0, 3) [dashed, color = dark-green, line width = 1];
+%     \draw (4.44, -1) node {\large{$-t_{\gamma}$}};
+%     \draw (9.1, -1)   node {\large{$t_{\gamma}$}};        
+% \end{tikzpicture}
+% \caption{Схема выделения множества, на котором $P\left(|t_{n-1}| < t_\gamma \right) = \gamma$}
+% \end{figure}
+
+Преобразуем левую часть уравнения (\ref{eq:2}):
+
+\begin{equation*}
+\begin{split}
+\bar x - \frac{s_x}{\sqrt{n}}t_\gamma & < M\xi < \bar x + \frac{s_x}{\sqrt{n}}t_\gamma \\
+\frac{s_x}{\sqrt{n}}t_\gamma & = \frac{2.8734}{10} \cdot 1.98 = 0.5689 \\
+             \bar x - 0.5689 & < M\xi < \bar x + 0.5689 \\
+             5.5111          & < M\xi < 6.6489
+\end{split}
+\end{equation*}
+
+Следовательно, $M\xi \in \left ( 5.5111, 6.6489 \right )$ с уровнем доверия $\gamma = 0.95$.
+
+Теперь будем искать доверительный интервал для $D\xi$. Рассмотрим случайную величину $U = (n-1)\frac{s^2}{\sigma_\xi^2}$. Из~уравнения (\ref{eq:1}) видно, что $U \in \chi^2_{n-1}$. Выберем интервал $(U_1, U_2)$ так, чтобы вероятность попадания $U$ левее и правее него была одинаковой и равной, следовательно, $(1 - \gamma)/2$. При доверительной вероятности $\gamma = 0.95$ имеем $(1 - 0.95)/2 = 0.025$. Для вычисления значения $U_1$ и $U_2$ воспользуемся функцией \lstinline{chi2inv} из пакета Matlab. 
+
+\begin{lstlisting}
+chi2inv(    0.025, 99) = 73.36
+chi2inv(1 - 0.025, 99) = 128.42
+\end{lstlisting}
+
+% \begin{figure}[h] \label{fig:1}
+% \centering
+% \begin{tikzpicture}[scale = .6]
+%     \begin{axis}[ height = 0.4\paperheight
+%                 , width = 0.7\paperwidth
+%                 , axis x line = bottom
+%                 , axis y line = middle
+%                 , xmin = 35
+%                 , xmax = 165
+%                 , ymax = 0.033
+%                 , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+%                 ]
+
+%         \addplot [color = dark-blue, line width = 0.5mm] 
+%             table {../data/chi2_99pdf.data};
+%     \end{axis}
+
+%     \draw (8, 4) arc [start angle = -90, end angle = -30, radius = 1cm] 
+%                  node [near end, above, minimum height = 25] {\large{$\gamma$}};
+%     \draw (3.4,  .4) arc  [start angle = 30, end angle = 50, radius = 2cm] 
+%                      node [near end, above] {\large{$\frac{1-\gamma}{2}$}};
+%     \draw (10.1, .4) arc [start angle = 150, end angle = 130, radius = 2cm] 
+%                      node [near end, above] {\large{$\frac{1-\gamma}{2}$}};                 
+
+%     \draw (4, -.5) -- ++(0, 3) [dashed, color = dark-green, line width = 1];
+%     \draw (9.7, -.5) -- ++(0, 3) [dashed, color = dark-green, line width = 1];
+%     \draw (3.53, -1) node {\large{$-t_{\gamma}$}};
+%     \draw (10, -1)   node {\large{$t_{\gamma}$}};     
+% \end{tikzpicture}
+% \caption{Схема выделения множества, на котором $P\left(|t_{n-1}| < t_\gamma \right) = \gamma$}
+% \end{figure}
+
+Тогда получаем:
+
+\begin{equation}
+\begin{split}
+73.36 & < 99 \cdot \frac{8.2562}{\sigma_\xi^2} < 128.42 \\
+ 6.36 & < D\xi                                 < 11.14
+\end{split}
+\end{equation}
+
+Следовательно $D\xi \in \left ( 6.36, 11.14 \right )$ с уровнем доверия $\gamma = 0.95$.
+
+\newpage
+
+\subsubsection*{Проверка гипотезы о равенстве значения числовой характеристики фиксированному числу}
+
+Проверим гипотезу о равенстве значения $M\xi$ некоторому фиксированному числу. Сформулируем простую основную гипотезу и сложную альтернативную:
+
+\begin{equation*}
+\begin{split}
+H_0 & : M\xi = \mu_0 = [\bar x] = 6 \\
+H_1 & : M\xi \ne \mu_0 = 6
+\end{split}
+\end{equation*}
+
+Запишем критерий проверки справедливости гипотезы:
+
+\begin{equation}
+T = t_{n-1} = \frac{\bar x - \mu_0}{s}\sqrt{n}
+\end{equation}
+
+Выберем уровень значимости $\alpha = 0.01$, тогда поскольку критерий подчиняется закону распределения Стьюдента с параметром $n-1$, тогда определим $t_\text{кр.}$, исходя из того, что $P\left( |t_{n-1}| > t_\text{кр.} \right) = \alpha$.
+
+% \begin{figure}[h] \label{fig:2}
+% \centering
+% \begin{tikzpicture}[scale = .6]
+%     \begin{axis}[ height = 0.4\paperheight
+%                 , width = 0.7\paperwidth
+%                 , axis x line = bottom
+%                 , axis y line = middle
+%                 , xmin = -5.5
+%                 , xmax = 5.5
+%                 % , xlabel = $x$
+%                 % , ylabel = $t_{n-1}$
+%                 , ymax = 0.43
+%                 , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+%                 ]
+
+%         \addplot [color = dark-blue, line width = 0.5mm] 
+%             table {../data/t99pdf.data};
+%     \end{axis}
+
+%     \draw (6.5, 9.5) node {\footnotesize{$y$}};
+%     \draw (13.5, 0.4) node {\footnotesize{$x$}};
+
+%     \draw (8, 4) arc [start angle = -90, end angle = -30, radius = 1cm] 
+%                  node [near end, above, minimum height = 25] {\footnotesize{$1 - \alpha$}};
+%     \draw (10.1, .1) arc [start angle = 150, end angle = 130, radius = 1.5cm] 
+%                  node [near end, above] {{$\frac{\alpha}{2}$}};
+%     \draw (3.4, .1) arc  [start angle = 30, end angle = 50, radius = 1.5cm] 
+%                  node [near end, above] {{$\frac{\alpha}{2}$}};
+
+%     \draw (3.53, -1) -- ++(0, 2) [dashed, color = dark-green, line width = 1];
+%     \draw (10,   -1) -- ++(0, 2) [dashed, color = dark-green, line width = 1];
+%     \draw (3.53, -1.5) node {\large{$-t_{\text{кр.}}$}};
+%     \draw (10,   -1.5) node {\large{$ t_{\text{кр.}}$}};
+%     \draw [decorate, decoration = {brace, amplitude=10pt, mirror}] 
+%           (0, -.5) -- (3.53, -.5) 
+%           node [midway, yshift = -.5cm] {$S_{\text{крит.}}$};
+%     \draw [decorate, decoration = {brace, amplitude=10pt, mirror}] 
+%           (3.54, -.5) -- (10, -.5)
+%           node [midway, yshift = -.5cm] {$Q_{\text{доп.}}$};
+%     \draw [decorate, decoration = {brace, amplitude=10pt, mirror}] 
+%           (10, -.5) -- ++(3.53, 0)
+%           node [midway, yshift = -.5cm] {$S_{\text{крит.}}$};          
+% \end{tikzpicture}
+% \caption{Схема выделения множеств $Q_{\text{доп.}}$ и $S_{\text{крит.}}$}
+% \end{figure}
+
+Используя функцию, обратную функции распределения \lstinline{tinv}, получим:
+
+\begin{lstlisting}
+tinv(             0.01/2, 99) = -2.62
+tinv((1 - 0.01) + 0.01/2, 99) =  2.62
+\end{lstlisting}
+
+Вычислим $T_\text{набл.}$:
+
+\begin{equation}
+T_\text{набл.} = \frac{\bar x - \mu_0}{s_x} \cdot \sqrt{n} = \frac{6.08 - 6}{2.8734} \cdot 10 = 0.27842
+\end{equation}
+
+Так как $T_\text{набл.} \in Q_\text{доп.} \Rightarrow$ оснований отвергать гипотезу $H_0$ у нас нет, и мы её принимаем.
+Вычислим вероятности ошибок второго рода полагая: $H'_1 : \mu_1 = 5.5$ и $H''_2 : \mu_2 = 6.5$. Согласно теореме Леви, будем считать, что распределение вероятностей $t_{n-1}$ мало отличается от $N\left(\bar y - \mu_1; \frac{s_x}{\sqrt{n}} \right)$. тогда вероятность ошибки второго рода будет:
+
+\begin{equation*}
+\beta = \Phi \left( \frac{\mu_0 - \mu_1}{s}\sqrt{n} + t_{\text{кр.}}\right) - 
+        \Phi \left( \frac{\mu_0 - \mu_1}{s}\sqrt{n} - t_{\text{кр.}}\right).
+\end{equation*}
+
+Получим $\beta' = \beta'' = 0.81054$.
+
+Проверим гипотезу равенства дисперсии определённому числу. 
+Запишем гипотезы, критерий и уровень значимости:
+
+\begin{equation*}
+\begin{split}
+&H_0 : D\xi = [s^2_x] = 8 \\
+&H_1 : D\xi \ne 8 \\ 
+&T = \chi^2_{n-1} = \left(n-1\right)\frac{s^2_x}{\sigma^2_0} \\
+&\alpha = 0.01
+\end{split}
+\end{equation*}
+
+С помощью \lstinline{chi2inv} вычислим $\chi^2_{\text{крит.}}$, такое что $P\left( \chi^2_{n-1} > \chi^2_{\text{крит.}} \right) = \alpha$. 
+
+\begin{lstlisting}
+chi2inv(1 - 0.01, 99) = 134.64
+\end{lstlisting}
+
+% \begin{figure}[h] \label{fig:2}
+% \centering
+% \begin{tikzpicture}[scale = .6]
+%     \begin{axis}[ height = 0.4\paperheight
+%                 , width = 0.7\paperwidth
+%                 , axis x line = bottom
+%                 , axis y line = middle
+%                 , xmin = 35
+%                 , xmax = 165
+%                 , ymax = 0.033
+%                 , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=3 }
+%                 ]
+
+%         \addplot [color = dark-blue, line width = 0.5mm] 
+%             table {../data/chi2_99pdf.data};
+%     \end{axis}
+
+%     \draw (6, 5) arc  [start angle = 260, end angle = 220, radius = 3]
+%                  node [near end, above, minimum height = 30] {$1 - \alpha$};
+%     \draw (10.7, 0.1) arc [start angle = -50, end angle = -20, radius = 2]
+%                  node [near end, above, minimum height = 20] {$\alpha$};
+
+
+%     \draw (1, 9.5) node {\footnotesize{$y$}};
+%     \draw (13.5, 0.4) node {\footnotesize{$x$}};
+%     \draw (10.4,   -1) -- ++(0, 2) [dashed, color = dark-green, line width = 1];
+%     \draw (10.6,   -1.5) node {\large{$ \chi^2_{\text{кр.}}$}};
+%     \draw [decorate, decoration = {brace, amplitude=10pt, mirror}] 
+%           (0, -.5) -- (10.4, -.5)
+%           node [midway, yshift = -.5cm] {$Q_{\text{доп.}}$};
+%     \draw [decorate, decoration = {brace, amplitude=10pt, mirror}] 
+%           (10.4, -.5) -- ++(3.53, 0)
+%           node [midway, yshift = -.5cm] {$S_{\text{крит.}}$};          
+% \end{tikzpicture}
+% \caption{Схема выделения множеств $Q_{\text{доп.}}$ и $S_{\text{крит.}}$}
+% \end{figure}
+
+Вычислим $T_{\text{набл.}}$:
+
+\begin{equation}
+T_{\text{набл.}} = \left(n - 1\right)\frac{s^2_x}{\sigma^2_0} = 99 \cdot \frac{8.2562}{8} = 102.17
+\end{equation}
+
+Поскольку $T_{\text{набл.}} \in Q_{\text{доп.}} \Rightarrow$ оснований не принимать гипотезу $H_0$ нет, мы её принимаем.
+
+\newpage
+
+\subsubsection*{Проверка гипотезы о совпадении значений одноимённых числовых характеристик двух различных случайных величин}
+
+Проверим гипотезу о совпадении дисперсий двух случайных величин.
+Рассмотрим дисперсии рассматриваемой нами случайной величины $D\xi$ и другой $D\xi'$. Полученные точечные оценки дисперсий: $s_x^2 = 8.2562$ и $s_x'^2 = 9.4016$. Сформулируем гипотезы:
+
+\begin{equation*}
+\begin{split}
+& H_0 : \frac{D\xi'}{D\xi} = 1 \\
+& H_1 : \frac{D\xi'}{D\xi} > 1 \\
+& T = f_{n'-1, n-1} = \frac{\chi^2_{n'-1} / (n' - 1)}{\chi^2_{n - 1} / (n - 1)}
+\end{split}
+\end{equation*}
+
+Критерием проверки справедливости гипотезы будет отношение $T \in F(n' - 1, n - 1)$ - подчиняющееся распределению Фишера-Снедекора (F-распределению).
+
+Выберем уровень значимости $\alpha = 0.01$, тогда:
+
+\begin{lstlisting}
+finv(1 - 0.01, 99, 99) = 1.6015
+\end{lstlisting}
+
+Вычислим $f_{\text{набл.}}$:
+
+\begin{equation}
+f_{\text{набл.}} = \frac{s'^2_x}{s^2_x} = \frac{9.4016}{8.2562}= 1.1387
+\end{equation}
+
+Поскольку $1.1387 < 1.6015 \Rightarrow T \in Q_{\text{доп.}}$, а значит мы принимаем гипотезу $H_0 : D\xi = D\xi'$.
+Используем этот результат в проверке гипотезы о равенстве математических ожиданий.
+Запишем гипотезы и критерий:
+
+\begin{equation*}
+\begin{split}
+& H_0 : M\xi = M\xi' \\
+& H_1 : M\xi \ne M\xi' \\
+& T = t_{n_1 + n_2 - 2} = \frac{\bar x - \bar x'}{s} \cdot \sqrt{\frac{n_1 \cdot n_2}{n_1 + n_2}},\\
+& s^2 = \frac{1}{n_1 + n_2 -2}\left( \left( n_1 - 1 \right) s^2_x + \left( n_2 - 1) s_{x'}^2\right)\right)
+\end{split}
+\end{equation*}
+
+\begin{lstlisting}
+tinv(1 - 0.01, 100 + 100 - 2) = 2.345
+\end{lstlisting}
+
+Следовательно, при уровне значимости $\alpha = 0.01$, $|t_{\text{крит.}}| = 2.345$. Вычислим $T_{\text{набл.}}$:
+
+\begin{equation*}
+\begin{split}
+& s^2 = \frac{1}{198} \left( 99 \cdot 8.2562 + 99 \cdot 9.4016 \right) = 8.8289 \\
+& T_{\text{набл.}} = \frac{6.08 - 4.82}{\sqrt{8.8289}} \cdot \sqrt{\frac{100 \cdot 100}{2 \cdot 100}}
+  = 2.9985
+\end{split}
+\end{equation*}
+
+Поскольку $T_{\text{набл.}} > t_{\text{крит.}} \Rightarrow$ отклоняем гипотезу $H_0$ и принимаем $H_1$, при этом вероятность ошибки первого рода равна $\alpha = 0.01$.
+
+\newpage
+
+\subsubsection*{Проверка гипотезы о виде закона распределения}
+
+В нашем случае гистограмма похожа на плотность вероятности гамма-распределения. Плотность вероянтости гамма-распределения:
+
+\begin{equation*}
+p(x) = 
+\begin {cases}
+0, & x \le 0 \\
+\frac{1}{\beta^\alpha \Gamma\left(\alpha\right)} \cdot x^{\alpha - 1} e^{-\left(\frac{x}{\beta}\right)}, & x > 0 \\
+\end {cases},
+\end{equation*}
+
+где $\alpha$ и $\beta$ -- числовые параметры распределения. Найдём эти параметры:
+
+\begin{equation*}
+\begin{split}
+& M\xi = \alpha \cdot \beta, D\xi = \alpha \cdot \beta^2 \Rightarrow \\
+& \Rightarrow \alpha = \frac{M^2\xi}{D\xi}, \beta = \frac{D\xi}{M\xi} \\
+& M\xi = 6, D\xi = 8 \Rightarrow \alpha = \frac{36}{8} = 4.5, \beta = \frac{8}{6} = 1.33
+\end{split}
+\end{equation*}
+
+Критерием будет случайная величина:
+
+\begin{equation*}
+T = \chi^2_{k - l - 1} = \sum \limits_{j=1}^k \frac{\left(m_j - np_j\right)^2}{np_j}
+\end{equation*}
+
+где $k = 6$ -- количество интервалов вариационного ряда, а $l = 2$ -- количество параметров распределения, которые заменяются их точечными оценками, тогда при урове значимости $\alpha = 0.01$,  $\chi^2_{\text{крит.}} = 11.345$.
+
+\begin{lstlisting}
+chi2inv(1 - 0.01, 6 - 2 - 1) = 11.345
+\end{lstlisting}
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|}
+\hline
+    & $( a_{j_1}; a_j]$ & $m_j$ & $p_j$      & $np_j$   & $(m_j - np_j)^2 / np_j$ \\
+\hline 
+    $1$ & $[1;3)$       & $6$   & $0.12245$  & $12.245$ & $2.6187$ \\
+    $2$ & $[3;5)$       & $23$  & $0.2914 $  & $29.14$  & $1.2937$ \\
+    $3$ & $[5;7)$       & $35$  & $0.27369$  & $27.369$ & $2.1277$ \\
+    $4$ & $[7;9)$       & $20$  & $0.16968$  & $12.968$ & $3.8132$ \\
+    $5$ & $[9;11)$      & $10$  & $0.083499$ & $8.3499$ & $0.32609$ \\
+    $6$ & $[11;21]$     & $6$   & $0.056166$ & $5.6166$ & $0.026172$ \\
+$\Sigma$&               & $100$ & $0.99689$  &          & $10.206$ \\
+\hline
+\end{tabularx}
+\end{table}
+
+Получили $\chi^2_{\text{набл.}} = 10.206 < 11.345 \Rightarrow$ у нас нет оснований отклонять гипотезу $H_0 : \xi \in \Gamma\left(\alpha, \beta\right)$.
+
+\newpage
+
+\subsubsection*{Проверка гипотезы о совпадении законов распределения двух случайных величин}
+
+Имеем вариационный ряд, построенный по выборке ${x'_i}$ значений случайной величины $\xi'$ и подогнанный к разбиению вариационного ряда $\xi$, чтобы $a_i = a'_i$.
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+    $\left [a_i, a_{i+1}\right)$ & $\left [1, 3\right )$ & $\left [3, 5\right )$ & $\left [5, 7\right )$ & $\left [7, 9\right )$ & $\left [9, 11\right )$ & $\left [11, 13\right )$ & $\left [13, 15\right )$ & $\left [15, 17\right )$ & $\left [17, 18\right )$ & $\left [19, 21\right ]$ \\
+\hline
+    $\frac{m_i}{n}$ & $0.17$ & $0.35$ & $0.31$ & $0.11$ & $0.02$ & $0.01$ & $0.0$ & $0.01$ & $0.01$ & $0.01$ \\
+\hline
+\end{tabularx}
+\setcounter{table}{1}
+\caption {Вариационный ряд $\{ x'_i \}$}
+\end{table}
+
+По этой выборке так же имеем: $\bar x' = 4.82, s'^2 = 9.4016, s' = 3.0662$. Формулируем гипотезу и критерий:
+
+\begin{equation*}
+\begin{split}
+& H_0 : F_{\xi}(x) = F_{\xi'}(x) \\
+& T = \chi^2_{k-1} = n_1 \cdot n_2 \sum \limits_{j=1}^k \frac{1}{m_j + m'_j} \left( \frac{m_j}{n_1} - \frac{m'_j}{n_2} \right)^2 \stackrel{(n_1 = n_2 = 100)}{=} \sum \limits_{j=1}^k \frac{\left( m_j - m'_j\right)^2}{m_j + m'_j}.
+\end{split}
+\end{equation*}
+
+Выбираем уровень значимости $\alpha = 0.01$, тогда получаем $\chi^2_{\text{крит.}} = 15.086$. Вычислим $\chi^2_{\text{набл.}}$:
+
+\begin{equation*}
+\chi^2_{\text{набл.}} = 16.332 
+\end{equation*}
+
+Так как $16.332 > 15.086  \Rightarrow T_{\text{набл.}} \in S_{\text{крит.}}$, значит мы отклоняем гипотезу $H_0$ с уровнем значимости $\alpha$ и принимаем гипотезу $H_1$. При этом вероятность ошибки первого рода $\alpha = 0.01$.
+
+\newpage
+
+\subsubsection{Первичная обработка статистических данных}
+
+Вторая выборка $\{ y_i \}$ объёма $n = 100$.
+Размах выборки: $\min(y_i) = 1.8$ и $\max(y_i) = 68.9$. 
+Интервал $[1.8, 68.9]$ так же делим на $k_2 = 10$ частей. 
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+    $\left [a_i, a_{i+1}\right)$ & $\left [1.8, 8.51\right )$ & $\left [8.51, 15.22\right )$ & $\left [15.22, 21.93\right )$ & $\left [21.93, 28.64\right )$ & $\left [28.64, 35.35\right )$ \\
+\hline
+    $\frac{m_i}{n}$ & $0.08$ & $0.08$ & $0.12$ & $0.13$ & $0.14$ \\
+\hline
+\hline
+    & $\left [35.35, 42.06\right )$ & $\left [42.06, 48.77\right )$ & $\left [48.77, 55.48\right )$ & $\left [55.48, 62.19\right )$ & $\left [62.19, 68.9\right ]$ \\
+\hline
+    & $0.08$ & $0.18$ & $0.04$ & $0.07$ & $0.08$ \\
+\hline
+\end{tabularx}
+\setcounter{table}{2}
+\caption {Вариационный ряд $\{ y_i \}$}
+\end{table}
+
+\begin{figure}[h] \label{fig:2}
+\centering
+\begin{tikzpicture} [scale = 1]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                , xtick = data
+                , ytick = data
+                , yticklabel style = { /pgf/number format/fixed, /pgf/number format/precision=2 }
+                ]
+
+        \addplot [ybar interval, color = black, fill = dark-blue, line width = 0.5mm] 
+            table {../data/hist2.data};
+
+    \end{axis}
+\end{tikzpicture}
+\caption{Гистограмма $\left \{ y_i \right\}$}
+\end{figure}
+
+Оценка мат. ожидания $M\eta$: 
+
+\begin{equation}
+\bar y = \frac{1}{n}\sum \limits_{i=1}^{n}y_i \approx 33.923
+\end{equation}
+
+Оценка дисперсии $D\eta$:
+
+\begin{equation}
+s_y^2 = \frac{1}{n - 1} \sum \limits_{i = 1}^{n} y_i^2 - \frac{n}{n - 1} \bar y^2 \approx 323.4
+\end{equation}
+
+Оценка среднеквадратического отклонения: 
+
+\begin{equation}
+s_y = \sqrt{s_y^2} \approx 17.983
+\end{equation}
+
+\newpage
+
+\subsubsection*{Интервальные оценки числовых характеристик}
+
+Найдём доверительный интервал для $M\eta$. Для выбранного уровня доверия $\gamma = 0.95$, $t_\gamma = 1.98$. Тогда:
+
+\begin{equation*}
+\begin{split}
+\bar y - \frac{s_y}{\sqrt{n}}t_\gamma < M\eta < \bar y + \frac{s_y}{\sqrt{n}}t_\gamma \\
+\frac{s_y}{\sqrt{n}}t_\gamma & = \frac{17.983}{10} \cdot 1.98 = 3.56 \\
+\bar y - 3.56   & < M\eta < \bar y + 3.56 \\
+30.363          & < M\eta < 37.483
+\end{split}
+\end{equation*}
+
+Следовательно, $M\eta \in \left ( 30.363, 37.483 \right )$ с уровнем доверия $\gamma = 0.95$.
+
+Теперь будем искать доверительный интервал для $D\eta$:
+
+\begin{equation*}
+\begin{split}
+\chi^2_1 & < \left(n-1\right) \cdot \frac{s^2_y}{\sigma^2_\eta} < \chi^2_2 \\
+73.36  & < 99 \cdot \frac{323.4}{\sigma_\eta^2} < 128.42 \\
+249.31 & < D\eta                            < 436.43
+\end{split}
+\end{equation*}
+
+Следовательно $D\eta \in \left ( 249.31, 436.43 \right )$ с уровнем доверия $\gamma = 0.95$.
+
+\subsubsection*{Проверка гипотезы о равенстве значения числовой характеристики фиксированному числу}
+
+\begin{equation*}
+\begin{split}
+& H_0 : M\eta = \mu_0 = [\bar y] = 34 \\
+& H_1 : M\eta \ne \mu_1 = 34 \\
+& \alpha = 0.01 \\
+& T = \frac{\bar y - \mu_0}{s} \sqrt{n}
+\end{split}
+\end{equation*}
+
+Найдём $t_{\text{крит.}}$, исходя из того, что $P\left( |t_{n-1}| > t_{\text{кр.}} \right) = \alpha$:
+
+\begin{lstlisting}
+tinv(             0.01/2, 99) = -2.62
+tinv((1 - 0.01) + 0.01/2, 99) =  2.62
+\end{lstlisting}
+
+Вычислим $T_\text{набл.}$:
+
+\begin{equation}
+T_\text{набл.} = \frac{33.923 - 34}{17.983} \cdot 10 = -0.042818
+\end{equation}
+
+Так как $0.042818 < 2.62 \Rightarrow T_\text{набл.} \in Q_\text{доп.} \Rightarrow$ оснований отвергать гипотезу $H_0$ нет, мы её принимаем. 
+
+Теперь проверим гипотезу о равенстве $D\eta$:
+
+\begin{equation*}
+\begin{split}
+& H_0 : D\eta = [s_y^2] = 323 \\
+& H_1 : D\eta \ne = 323 \\
+& \alpha = 0.01 \\
+& T = \left(n-1\right)\frac{s^2_y}{\sigma_0^2}
+\end{split}
+\end{equation*}
+
+Найдём $\chi^2_\text{крит.}$, такое что $P\left(\chi^2_{n-1} > \chi^2_\text{крит.}\right) = \alpha$.
+
+\begin{lstlisting}
+chi2inv(1 - 0.01, 99) = 134.64
+\end{lstlisting}
+
+Вычислим $T_\text{набл.}$:
+
+\begin{equation}
+T_\text{набл.} = \left(n-1\right) \frac{s_y^2}{\sigma^2_0} = 99 \cdot \frac{323.4}{323} = 99.123
+\end{equation}
+
+Поскольку $T_\text{набл.} \in Q_\text{доп.} \Rightarrow$ оснований не принимать гипотезу $H_0$ нет, мы её принимаем.
+
+\newpage
+
+\subsubsection{Проверка гипотезы о совпадении значений одноимённых числовых характеристик двух различных случайных величин}
+
+Проверим гипотезу о совпадении дисперсий рассматриваемой нами случайной величины $D\eta$ и $D\eta'$. Полученные точечные оценки дисперсий: $s^2_y = 323.4$ и $s'^2_y = 815.59$. Запишем гипотезы, критерий и уровень значимости:
+
+\begin{equation*}
+\begin{split}
+& H_0 : \frac{D\eta'}{D\eta} = 1 \\
+& H_1 : \frac{D\eta'}{D\eta} > 1 \\
+& \alpha = 0.01 \\
+& T = f_{n'-1, n-1} = \frac{\chi^2_{n'-1} / \left(n' - 1\right)}{\chi^2_{n-1} / \left(n - 1\right)}
+\end{split}
+\end{equation*}
+
+Для уровня значимости $\alpha = 0.01$:
+
+\begin{lstlisting}
+finv(1 - 0.01, 99, 99) = 1.6015
+\end{lstlisting}
+
+Вычислим $T_\text{набл.}$:
+
+\begin{equation}
+T_\text{набл.} = \frac{s'^2_y}{s^2_y} = \frac{815.59}{323.4} = 2.5219
+\end{equation}
+
+Поскольку $2.5219 > 1.6015 \Rightarrow T \in S_\text{крит.}$, а значит мы отклоняем гипотезу $H_0$ и принимаем $H_1$. При этом вероятность ошибки первого рода равна $\alpha = 0.01$.
+
+Запишем гипотезы:
+
+\begin{equation*}
+\begin{split}
+& H_0 : M\eta = M\eta' \\
+& H_1 : M\eta \ne M\eta'
+\end{split}
+\end{equation*}
+
+Поскольку гипотеза о равенстве дисперсий не подтвердилась, будем использовать другой критерий:
+
+\begin{equation}
+T = u = \left(\bar y - \bar y' \right) / \sqrt{\frac{s^2_y}{n} + \frac{s'^2_y}{n'}}
+\end{equation}
+
+Этот критерий, согласно теореме Леви, асимптотически нормален, тогда $P\left(|u| > u_\text{кр.}\right) = 1 - 2\Phi\left(u_\text{кр.}\right) = \alpha$, или $u_\text{кр.} = \Phi^{-1}\left(\left(1 - \alpha\right) / 2\right)$.
+
+\begin{lstlisting}
+norminv(    0.01/2) = -2.5758
+norminv(1 - 0.01/2) =  2.5758
+\end{lstlisting}
+
+Вычислим $T_\text{набл.}$:
+
+\begin{equation}
+T_\text{набл.} = (33.923 - 51.184) / \sqrt{\frac{323.4}{100} + \frac{815.59}{100}} = -17.261 \cdot \sqrt{11.390} = -58.254
+\end{equation}
+
+Поскольку $|T_\text{набл.}| > u_\text{кр.} \Rightarrow$ мы отклоняем гипотезу $H_0$ и принимаем $H_1$.
+
+\newpage
+
+\subsubsection*{Проверка гипотезы о виде закона распределения}
+
+В нашем случае гистограмма похожа на плотность вероятности равномерного распределения. Плотность вероятности равномерного распределения:
+
+\begin{equation*}
+p(x) = 
+\begin {cases}
+0,               & x < a \\
+\frac{1}{b - a}, & a \le x < b \\
+0,               & b \le x \\
+\end {cases},
+\end{equation*}
+
+где $a$ и $b$ -- начало и конец отрезка, на котором $\eta$ принимает не нулевые значения. Возьмём в качестве этих параметров $x_{min} = 1.8$ и $x_{max} = 68.9$. Критерий:
+
+\begin{equation}
+T = \chi^2_{k-l-1} = \sum \limits_{j=1}^{k} \frac{\left(m_j - np_j\right)^2}{np_j}
+\end{equation}
+
+где $k = 10$ -- количество интервалов вариационного ряда, а $l = 2$ -- количество параметров распределения, которые заменяются их точечными оценками. Тогда при уровне значимости $\alpha = 0.01$, $\chi^2_\text{крит.} = 18.475$.
+
+\begin{lstlisting}
+chi2inv(1 - 0.01, 10 - 2 - 1) = 18.475
+\end{lstlisting}
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|}
+\hline
+      & $( a_{j_1}; a_j]$ & $m_j$ & $p_j$  & $np_j$ & $(m_j - np_j)^2 / np_j$ \\
+\hline 
+    $1$ & $[1.8  ;8.51 )$ & $8$   & $0.1$  & $10$   & $0.39996$ \\
+    $2$ & $[8.51 ;15.22)$ & $8$   & $0.1$  & $10$   & $0.39996$ \\
+    $3$ & $[15.22;21.93)$ & $12$  & $0.1$  & $10$   & $0.40004$ \\
+    $4$ & $[21.93;28.64)$ & $13$  & $0.1$  & $10$   & $0.90007$ \\
+    $5$ & $[28.64;35.35)$ & $14$  & $0.1$  & $10$   & $1.6001 $ \\
+    $6$ & $[35.35;42.06)$ & $8$   & $0.1$  & $10$   & $0.39996$ \\
+    $7$ & $[42.06;48.77)$ & $18$  & $0.1$  & $10$   & $6.4002$ \\
+    $8$ & $[48.77;55.48)$ & $4$   & $0.1$  & $10$   & $3.5999$ \\
+    $9$ & $[55.48;62.19)$ & $7$   & $0.1$  & $10$   & $0.89995$ \\
+    $10$& $[62.19;68.9 ]$ & $8$   & $0.1$  & $10$   & $0.39996$ \\
+$\Sigma$&                 & $100$ & $1$    &        & $15.400$ \\
+\hline
+\end{tabularx}
+\end{table}
+
+Получили $\chi^2_\text{набл.} = 15.4 < 18.475 \Rightarrow$ у нас нет оснований отклонять гипотезу $H_0$.
+
+\newpage
+
+\subsubsection*{Проверка гипотезы о совпадении законов распределения двух случайных величин}
+
+Перепишем оба вариационных ряда так, чтобы разбиения у них совадали ($a_i = a'_i$).
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+    $\left [a_i, a_{i+1}\right)$ & $[0, 10)$ & $[10,20)$ & $[20,30)$ & $[30,40)$ & $[40,50)$ \\
+\hline
+    $\frac{m_i}{n}$ & $8$ & $19$ & $19$ & $14$ & $21$ \\
+\hline
+\hline
+    & $[50,60)$ & $[60,70)$ & $[70,80)$ & $[80,90)$ & $[90,100]$ \\
+\hline
+    & $9$ & $10$ & $0$ & $0$ & $0$ \\
+\hline
+\end{tabularx}
+\setcounter{table}{2}
+\caption {Вариационный ряд $\{ y_i \}$}
+\end{table}
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+    $\left [a_i, a_{i+1}\right)$ & $[0, 10)$ & $[10,20)$ & $[20,30)$ & $[30,40)$ & $[40,50)$ \\
+\hline
+    $\frac{m_i}{n}$ & $11$ & $8$ & $8$ & $10$ & $13$ \\
+\hline
+\hline
+    & $[50,60)$ & $[60,70)$ & $[70,80)$ & $[80,90)$ & $[90,100]$ \\
+\hline
+    & $8$ & $14$ & $7$ & $8$ & $13$ \\
+\hline
+\end{tabularx}
+\setcounter{table}{2}
+\caption {Вариационный ряд $\{ y'_i \}$}
+\end{table}
+
+Мы видим, что в первом вариационном ряду значения на отрезках $[70, 80), [80, 90)$ и $[90, 100)$ равны нулю. Мы можем сделать проверку двумя способами: 1) можно выбросить часть вариационного ряда $y'_i$, и 2) объединим интервалы в $[60,100)$ в обоих вариационных рядах.
+
+Рассмотрим вариант 1):
+
+Имеем гипотезу: $H_0 : F_{\eta}(x) = F_{\eta'}(x)$;
+
+Тогда, поскольку мы выбросили часть выборки $\{y'_i\}$, тогда $n_2 = 100 - 13 - 8 - 8 = 71$ и критерий будет иметь вид:
+
+\begin{equation}
+T = \chi^2_{k-1} = n_1 \cdot n_2 \sum \limits^{k}_{j=1} \frac{1}{m_j + m'_j} \left(\frac{m_j}{n_1} - \frac{m'_j}{n_2}\right)^2
+\end{equation}
+
+Для уровня значимости $\alpha = 0.01$ получим $\chi^2_\text{крит.} = 16.812$
+
+Вычислим $T_\text{набл.} = 8.3750 < 16.812 \Rightarrow H_0$ принимается.
+
+Рассмотрим вариант 2):
+
+Гипотеза $H_0$ - та же. Поскольку $n_1 = n_2 = 100$, то воспользуемся более простым критерием:
+
+\begin{equation}
+T = \sum \limits^{k}_{j = 1} \frac{\left(m_j - m'_j\right)^2}{m_j + m'_j}.
+\end{equation}
+
+Тогда при тех же $\alpha = 0.01$ и $\chi^2_\text{крит.} = 16.812$ получим $\chi^2_\text{набл.} = 31.737 > 16.812 \Rightarrow H_0$ отклоняется.
+
+Какой из способов выбрать? Мы знаем, что оба распределения - равномерны, но их графики, видимо, выглядят так:
+
+\begin{figure}[h] \label{fig:3}
+\centering
+\begin{tikzpicture}[scale = .8]
+    \begin{axis}[ height = 0.2\paperheight
+                , width = 0.7\paperwidth
+                , xmin = 35
+                , xmax = 165
+                , ymax = 0.033
+                , axis x line = bottom
+                , axis y line = middle
+                ]
+
+    \end{axis}
+
+    \draw [color = dark-green, line width = 1]
+        (0, 0) -- ++(0, 1) -- ++(13.2,0) -- ++(0, -1);
+    \draw [color = dark-blue, line width = 1]
+        (1.5, 0) -- ++(0, 1.7) -- ++(6, 0) -- ++ (0, -1.7);
+      
+\end{tikzpicture}
+\end{figure}
+
+\newpage
+
+\subsubsection*{Корреляционный анализ}
+
+По элементам двумерной выборки $\{ (x_i;y_i) : y \in \bar {1,n} \}$ составим корреляционную таблицу:
+
+\begin{table}[h]
+\begin{tabularx}{\textwidth}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+  $\eta \backslash \xi$ & $[1,3)$ & $[3,5)$ & $[5,7)$ & $[7,9)$ & $[9,11)$ & $[11,13)$ & $[13,15)$ & $[15,17)$ & $[17,19)$ & $[19,21]$ & \\
+\hline 
+    $[ 1.8 ; 8.51)$ &     & $1$ &      & $2$  & $2$ & $3$ &     & & &     & $8$  \\
+    $[ 8.51;15.22)$ & $1$ &     & $3$  & $2$  & $1$ & $1$ &     & & &     & $8$  \\
+    $[15.22;21.93)$ &     &     & $3$  & $3$  & $5$ &     & $1$ & & &     & $12$ \\
+    $[21.93;28.64)$ &     &     & $6$  & $5$  & $1$ &     &     & & & $1$ & $13$ \\
+    $[28.64;35.35)$ &     & $2$ & $10$ & $1$  & $1$ &     &     & & &     & $14$ \\
+    $[35.35;42.06)$ &     & $3$ & $3$  & $2$  &     &     &     & & &     & $8$  \\
+    $[42.06;48.77)$ &     & $4$ & $10$ & $4$  &     &     &     & & &     & $18$ \\
+    $[48.77;55.48)$ & $1$ & $2$ &      & $1$  &     &     &     & & &     & $4$  \\
+    $[55.48;62.19)$ & $1$ & $6$ &      &      &     &     &     & & &     & $7$  \\
+    $[62.19;68.9 ]$ & $3$ & $5$ &      &      &     &     &     & & &     & $8$  \\
+\hline
+                   & $6$ & $23$ & $35$ & $20$ & $10$ & $4$ & $1$ & & & $1$ & $100$\\
+\hline
+\end{tabularx}
+\end{table}
+
+Сила статистической связи оценивается с помощью коэффициента линейной корреляции:
+
+\begin{equation}
+\rho = \frac{\alpha_{11} - m_\xi m\eta}{\sigma_\xi \sigma_\eta}
+\end{equation}
+
+Точечная оценка коэффициента линейной корреляции:
+
+\begin{equation}
+\begin{split}
+& r = \frac{a_{11} - \bar x \bar y}{s_x s_y}, \text{где} \\
+& a_{11} = \frac{1}{n} \sum \limits^{n}_{i=1}x_i y_i  
+\end{split}
+\end{equation}
+
+В нашем случае $r = -0.011603$. Получнное близкое к нулю значение позволяет сделать вывод о почти отсутствующей связи между случайными величинами. 
+
+Найдём функции регрессии: $f(x) = M\left[\eta / \left\{\xi = x\right\}\right]$.
+По корреляционной таблице видно, что обе функции регрессии - линейные, то есть $f(x) = a_1x+b_1$. Теоретическое уравнение линейной функции регрессии $\eta$ на $\xi$ имеет вид:
+
+\begin{equation}
+y - m_\eta = \rho \frac{\sigma_\eta}{\sigma_\xi} \left( x - m_\xi \right)
+\end{equation}
+
+Заменяя в этом уравнении теоретические числовые характеристики их точечными оценками получим:
+
+\begin{equation}
+y - \bar y = r \frac{s_y}{s_x} \left( x - \bar x \right)
+\end{equation}
+
+В нашем случае уравнение принимает вид:
+
+\begin{equation}
+\begin{split}
+& y - 33.923 = -0.011603 \cdot \frac{17.983}{2.8734} \left(x - 6.08\right) \\
+& y - 33.923 = -0.072617 \cdot \left(x - 6.08\right) \\
+& y = -0.072617 x + 34.365
+\end{split}
+\end{equation}
+
+Аналогично находим регрессию $\xi$ на $\eta$:
+
+\begin{equation}
+\begin{split}
+& x - m_\xi = \rho \frac{\sigma_\xi}{\sigma_\eta} \left( y - m_\eta \right) \\
+& x - \bar x = r \frac{s_x}{s_y} \left( y - \bar y \right) \\
+& x - 6.08 = -0.011603 \cdot \frac{2.8734}{17.983} \left(y - 33.923\right) \\
+& x = -0.0018539 y + 6.1429
+\end{split}
+\end{equation}
+
+\newpage
+
+\begin{figure}[h] \label{fig:4}
+\centering
+\begin{tikzpicture}[scale = .8]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                , xmin = 0
+                , xmax = 5
+                , ymax = 34.5
+                , axis x line = bottom
+                , axis y line = left
+                ]
+        \addplot [dark-blue] {-0.072617*x + 34.365};
+    \end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\begin{figure}[h] \label{fig:4}
+\centering
+\begin{tikzpicture}[scale = .8]
+    \begin{axis}[ height = 0.4\paperheight
+                , width = 0.7\paperwidth
+                , xmin = 0
+                , xmax = 5
+                , ymax = 3500
+                , axis x line = bottom
+                , axis y line = left
+                ]
+        \addplot [dark-green]{-539.40*x + 3313.5};
+    \end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\end{document}

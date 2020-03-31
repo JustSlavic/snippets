@@ -1,0 +1,18 @@
+# Created by Octave 4.0.0, Wed Nov 22 19:20:00 2017 +03 <radko@kekrometr>
+# name: hist1
+# type: matrix
+# rows: 11
+# columns: 2
+ 1 0.06
+ 3 0.23
+ 5 0.35
+ 7 0.2
+ 9 0.1
+ 11 0.04
+ 13 0.01
+ 15 0
+ 17 0
+ 19 0.01
+ 21 0
+
+
