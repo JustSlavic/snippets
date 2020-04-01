@@ -1,25 +1,26 @@
 # project name
-PROJECT=		jsonc-test
+PROJECT=	jsonc-test
 
 # compiler
-CXX=			g++
+CXX=		g++
 
 # c++ standard
 CXX_STANDARD=	c++14
 
 # include directories
-INC_DIR=		/usr/include/json-c/
+INC_DIR=	/usr/include/json-c \
+		/usr/include/readline
 
 # library directories
-LIB_DIR=		/usr/lib/x86_64-linux-gnu/
+LIB_DIR=	/usr/lib/x86_64-linux-gnu
 
 # libraries
-LIBS=			json-c \
-				readline
+LIBS=		json-c \
+		readline
 
 # compilation flags
-CXXFLAGS=		-Wall \
-				-std=$(CXX_STANDARD)
+CXXFLAGS=	-Wall \
+		-std=$(CXX_STANDARD)
 
 CXXFLAGS+=  $(addprefix -I, $(INC_DIR))
 
