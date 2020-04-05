@@ -28,7 +28,11 @@ int main() {
 
     aho_corasick::parser parser;
     parser.consume_dictionary(dictionary);
-    parser.parse(text, [](const std::string& word) { std::cout << "found " << word << std::endl; });
+    std::cout << "===== parse ======\n";
+    parser.parse(text, [](const std::string &word) { std::cout << "found " << word << std::endl; });
+    std::cout << "=== full words ===\n";
+    parser.parse_full_words(text, [](const std::string &word) { std::cout << "found " << word << std::endl; });
+    std::cout << "==================\n";
 
     return 0;
 }

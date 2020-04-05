@@ -48,7 +48,7 @@ std::string parser::trie::collect(parser::trie::node prefix) {
 }
 
 void parser::consume_dictionary(const std::vector<std::string>& dict) {
-    /// build m_trie
+    // build m_trie
     for (const auto& word : dict) {
         trie::node current = 0;
 
@@ -60,7 +60,7 @@ void parser::consume_dictionary(const std::vector<std::string>& dict) {
         m_trie.terminal[current] = true;
     }
 
-    /// build failure functions
+    // build failure functions
     std::queue<trie::node> q;
 
     for (trie::node i = 1; i < m_trie.size; ++i) {
