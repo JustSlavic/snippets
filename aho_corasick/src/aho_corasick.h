@@ -52,10 +52,10 @@ void parser::parse(const std::string &text, Fn callback) {
         current = next_node(current, c);
 
         // print as many thing as possible
-        trie::node t = current;
-        while (t != trie::root) {
+        trie::node t = current; // make copy of current node
+        while (t != trie::root) { // traverse through failure links until reaching root node
             if (m_trie.terminal[t]) {
-                callback(m_trie.collect(t));
+                callback(m_trie.collect(t)); // call function on all terminals along the way
             }
             t = m_trie.failure[t];
         }
@@ -72,17 +72,16 @@ void parser::parse_full_words(const std::string &text, Fn callback) {
 
         while (true) {
             trie::node found = m_trie.go_to(current, c);
-            if (found) {
+
+            if (found) { // if we found the thing
                 current = found;
                 break;
-            } else {
-                if (m_trie.terminal[current]) {
-                    callback(m_trie.collect(current));
-                    current = trie::root;
-                } else {
-                    current = m_trie.failure[current];
-                    break;
-                }
+            } else if (m_trie.terminal[current]) { // if failed to go further in trie, but this is terminal => we found our word
+                callback(m_trie.collect(current));
+                current = trie::root;
+            } else { // if failed to go further in trie, but this is not terminal => go to failure link and keep search
+                current = m_trie.failure[current];
+                break;
             }
         }
     }

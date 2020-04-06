@@ -60,9 +60,10 @@ void parser::consume_dictionary(const std::vector<std::string>& dict) {
         m_trie.terminal[current] = true;
     }
 
-    // build failure functions
+    // use BFS to build failure functions
     std::queue<trie::node> q;
 
+    // the first layer goes into queue (root is 0th layer)
     for (trie::node i = 1; i < m_trie.size; ++i) {
         if (m_trie.parent[i] == trie::root) {
             q.push(i);
@@ -71,8 +72,13 @@ void parser::consume_dictionary(const std::vector<std::string>& dict) {
 
     while (!q.empty()) {
         trie::node current = q.front(); q.pop();
+
+        // traverse along failure link from current node
         trie::node f = m_trie.failure[current];
 
+        // try to find links from node 'f' with the same letter as 'next_node' links to current node,
+        // if such found => this is where failure link of 'next_node' should go
+        // if not found => point failure link to the root
         for (trie::node next_node = 0; next_node < m_trie.size; ++next_node) {
             if (m_trie.parent[next_node] != current) continue;
 
