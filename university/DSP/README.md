@@ -1,1 +1,1 @@
-    read doc/report.pdf
+Read doc/report.pdf
